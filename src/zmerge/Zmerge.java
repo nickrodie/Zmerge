@@ -23,6 +23,21 @@
  */
 package zmerge;
 
+import com.garmin.fit.Decode;
+import com.garmin.fit.FileEncoder;
+import com.garmin.fit.FileIdMesg;
+import com.garmin.fit.Fit;
+import com.garmin.fit.FitRuntimeException;
+import com.garmin.fit.LapMesg;
+import com.garmin.fit.Manufacturer;
+import com.garmin.fit.Mesg;
+import com.garmin.fit.MesgDefinition;
+import com.garmin.fit.MesgDefinitionListener;
+import com.garmin.fit.MesgListener;
+import com.garmin.fit.MesgNum;
+import com.garmin.fit.RecordMesg;
+import com.garmin.fit.SessionMesg;
+import com.garmin.fit.SubSport;
 import java.awt.event.*;
 import java.awt.Color;
 import java.io.IOException;
@@ -33,7 +48,6 @@ import javax.swing.*;
 import javax.swing.filechooser.*;
 import javax.swing.border.*;
 import java.util.HashMap;
-import com.garmin.fit.*;
 
 /**
  *
@@ -42,7 +56,7 @@ import com.garmin.fit.*;
 public class Zmerge extends JPanel implements ActionListener, FocusListener {  
     
     private static final String APP_NAME = "Zmerge";
-    private static final String VERSION = "0.0.0";
+    private static final String VERSION = "0.0.1";
     private static final long serialVersionUID = 2829528799561163825L;  
     
     private enum FIELD {
@@ -317,7 +331,7 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
                     case MesgNum.FILE_ID:
 
                         Integer man = mesg.getFieldIntegerValue(FileIdMesg.ManufacturerFieldNum);
-                        if(man != null && man != Manufacturer.ZWIFT)
+                        if(man == null || man != Manufacturer.ZWIFT)
                             throw new FitRuntimeException("Manufacturer does not match Zwift."); 
                         break;
 
@@ -366,12 +380,12 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
                     
                     switch (type) {
                         
-                        case MesgNum.RECORD:
+                        case MesgNum.RECORD:                            
+                            
+                            Integer timestamp = mesg.getFieldIntegerValue(RecordMesg.TimestampFieldNum);
+                            HashMap<Enum, Double> zData = _records.get(timestamp);
                             
                             // ignore records that dont match a Zwift timestamp
-                            Integer timestamp = mesg.getFieldIntegerValue(RecordMesg.TimestampFieldNum);
-                            if(_records.get(timestamp) == null) return;
-                            HashMap<Enum, Double> zData = _records.get(timestamp);
                             if(zData == null) return;
                             else if(_startTime == 0) {
                                 _startTime = timestamp;
@@ -468,8 +482,8 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
                         case MesgNum.FILE_ID:
                             
                             Integer man = mesg.getFieldIntegerValue(FileIdMesg.ManufacturerFieldNum);
-                            if(man != null && man == Manufacturer.GARMIN) _encode.write(mesg);
-                            else throw new FitRuntimeException("Manufacturer does not match Garmin.");
+                            if(man == null || man != Manufacturer.GARMIN) 
+                                throw new FitRuntimeException("Manufacturer does not match Garmin.");
                             break;
                             
                         default:
