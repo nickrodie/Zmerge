@@ -56,8 +56,9 @@ import java.util.HashMap;
 public class Zmerge extends JPanel implements ActionListener, FocusListener {  
     
     private static final String APP_NAME = "Zmerge";
-    private static final String VERSION = "0.0.1";
-    private static final long serialVersionUID = 2829528799561163825L;  
+    private static final String VERSION = "0.1.0";
+    private static final long serialVersionUID = 2829528799561163826L;  
+    private static final int ZWIFT_FILES = 3;
     
     private enum FIELD {
         ALTITUDE,
@@ -72,10 +73,12 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
         SAVE_FILE
     };
 
-    private JButton _gFileBtn, _zFileBtn, _mFileBtn, _mergeBtn, _resetBtn, _quitBtn;
-    private JTextArea _gText, _zText, _mText;
-    private String _gPath, _zPath, _mPath;
+    private JButton _gFileBtn, _zFileBtn1, _zFileBtn2, _zFileBtn3, _mFileBtn, _mergeBtn, _resetBtn, _quitBtn;
+    private JTextArea _gText, _zText1, _zText2, _zText3, _mText;
+    private String _gPath, _zPath1, _zPath2, _zPath3, _mPath;
     private HashMap<Integer, HashMap<Enum, Double>> _records;
+    private Integer[] _fileTimestamp;
+    private int _fileIndex;
     
     @Override
     public void focusGained(FocusEvent e) {}
@@ -85,8 +88,14 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
         if(e.getSource() == _gText) {
             _gText.setCaretPosition(0);
         }
-        else if(e.getSource() == _zText) {
-            _zText.setCaretPosition(0);
+        else if(e.getSource() == _zText1) {
+            _zText1.setCaretPosition(0);
+        }
+        else if(e.getSource() == _zText2) {
+            _zText2.setCaretPosition(0);
+        }
+        else if(e.getSource() == _zText3) {
+            _zText3.setCaretPosition(0);
         }
         else if(e.getSource() == _mText) {
             _mText.setCaretPosition(0);
@@ -103,11 +112,25 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
                 _gText.setCaretPosition(0);
             }
         }
-        else if(e.getSource() == _zFileBtn) {
+        else if(e.getSource() == _zFileBtn1) {
             String filePath = selectFile(ACTION.OPEN_FILE);
             if(filePath != null) {
-                _zText.setText(filePath);
-                _zText.setCaretPosition(0);
+                _zText1.setText(filePath);
+                _zText1.setCaretPosition(0);
+            }
+        }
+        else if(e.getSource() == _zFileBtn2) {
+            String filePath = selectFile(ACTION.OPEN_FILE);
+            if(filePath != null) {
+                _zText2.setText(filePath);
+                _zText2.setCaretPosition(0);
+            }
+        }
+        else if(e.getSource() == _zFileBtn3) {
+            String filePath = selectFile(ACTION.OPEN_FILE);
+            if(filePath != null) {
+                _zText3.setText(filePath);
+                _zText3.setCaretPosition(0);
             }
         }
         else if(e.getSource() == _mFileBtn) {
@@ -122,7 +145,9 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
         } 
         else if(e.getSource() == _resetBtn) {
             _gText.setText(null);
-            _zText.setText(null);
+            _zText1.setText(null);
+            _zText2.setText(null);
+            _zText3.setText(null);
             _mText.setText(null);
         } 
         else if(e.getSource() == _quitBtn) {
@@ -163,12 +188,24 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
         _gText = new JTextArea();
         _gText.addFocusListener(this);
         JScrollPane gPane = newPane(_gText);
-
-        _zFileBtn = new JButton("Select Zwift Fit File");
-        _zFileBtn.addActionListener(this);
-        _zText = new JTextArea();
-        _zText.addFocusListener(this);
-        JScrollPane zPane = newPane(_zText);
+        
+        _zFileBtn1 = new JButton("Select Zwift Fit File 1");
+        _zFileBtn1.addActionListener(this);
+        _zText1 = new JTextArea();
+        _zText1.addFocusListener(this);
+        JScrollPane zPane1 = newPane(_zText1);
+        
+        _zFileBtn2 = new JButton("Select Zwift Fit File 2");
+        _zFileBtn2.addActionListener(this);
+        _zText2 = new JTextArea();
+        _zText2.addFocusListener(this);
+        JScrollPane zPane2 = newPane(_zText2);
+        
+        _zFileBtn3 = new JButton("Select Zwift Fit File 3");
+        _zFileBtn3.addActionListener(this);
+        _zText3 = new JTextArea();
+        _zText3.addFocusListener(this);
+        JScrollPane zPane3 = newPane(_zText3);
         
         _mFileBtn = new JButton("Save Merged File As");        
         _mFileBtn.addActionListener(this);        
@@ -189,8 +226,12 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
         gui.setLayout(null);
         gui.add(_gFileBtn);
         gui.add(gPane);
-        gui.add(_zFileBtn);
-        gui.add(zPane);        
+        gui.add(_zFileBtn1);
+        gui.add(zPane1);
+        gui.add(_zFileBtn2);
+        gui.add(zPane2);
+        gui.add(_zFileBtn3);
+        gui.add(zPane3);        
         gui.add(_mFileBtn);
         gui.add(mPane);        
         gui.add(_mergeBtn);
@@ -208,21 +249,25 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
 
         _gFileBtn.setBounds(px, 1 * py + 0 * bh, fbw, bh);
         gPane.setBounds(2 * px + fbw, 1 * py + 0 * bh, ww - bx - fbw - 3 * px, bh);
-        _zFileBtn.setBounds(px, 2 * py + 1 * bh, fbw, bh);
-        zPane.setBounds(2 * px + fbw, 2 * py + 1 * bh, ww - bx - fbw - 3 * px, bh);
-        _mFileBtn.setBounds(px, 3 * py + 2 * bh, fbw, bh);
-        mPane.setBounds(2 * px + fbw, 3 * py + 2 * bh, ww - bx - fbw - 3 * px, bh);
-        _mergeBtn.setBounds(ww - 3 * (abw + px) - bx - 1, 4 * py + 3 * bh, abw, bh);
-        _resetBtn.setBounds(ww - 2 * (abw + px) - bx - 1, 4 * py + 3 * bh, abw, bh);
-        _quitBtn.setBounds(ww - abw - px - bx - 1, 4 * py + 3 * bh, abw, bh);
-        gui.setSize(ww, by + 5 * py + 4 * bh);
+        _zFileBtn1.setBounds(px, 2 * py + 1 * bh, fbw, bh);
+        zPane1.setBounds(2 * px + fbw, 2 * py + 1 * bh, ww - bx - fbw - 3 * px, bh);
+        _zFileBtn2.setBounds(px, 3 * py + 2 * bh, fbw, bh);
+        zPane2.setBounds(2 * px + fbw, 3 * py + 2 * bh, ww - bx - fbw - 3 * px, bh);
+        _zFileBtn3.setBounds(px, 4 * py + 3 * bh, fbw, bh);
+        zPane3.setBounds(2 * px + fbw, 4 * py + 3 * bh, ww - bx - fbw - 3 * px, bh);
+        _mFileBtn.setBounds(px, 5 * py + 4 * bh, fbw, bh);
+        mPane.setBounds(2 * px + fbw, 5 * py + 4 * bh, ww - bx - fbw - 3 * px, bh);
+        _mergeBtn.setBounds(ww - 3 * (abw + px) - bx - 1, 6 * py + 5 * bh, abw, bh);
+        _resetBtn.setBounds(ww - 2 * (abw + px) - bx - 1, 6 * py + 5 * bh, abw, bh);
+        _quitBtn.setBounds(ww - abw - px - bx - 1, 6 * py + 5 * bh, abw, bh);
+        gui.setSize(ww, by + 7 * py + 6 * bh);
         
         gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gui.setLocationRelativeTo(null); 
         gui.setVisible(true);
     }    
 
-    private void checkInStream(String path) {        
+    private void checkInStream(String path) {
         InputStream stream;
         Decode decode;
         try {            
@@ -294,8 +339,8 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
         }
     }    
 
-    private void getZwiftData() {
-        class Listener implements MesgListener {            
+    private void getZwiftData() {        
+        class Listener implements MesgListener {  
             
             @Override
             public void onMesg(Mesg mesg) { 
@@ -325,8 +370,15 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
                         zData.put(FIELD.DISTANCE, distance);            
                         zData.put(FIELD.LATITUDE, latitude);
                         zData.put(FIELD.LONGITUDE, longitude);
-                        zData.put(FIELD.SPEED, speed);   
+                        zData.put(FIELD.SPEED, speed);                        
                         break;
+                        
+                    case MesgNum.SESSION: 
+                        
+                            // save session timestamp to join zwift files later if required
+                            _fileTimestamp[_fileIndex] = mesg.getFieldIntegerValue(SessionMesg.TimestampFieldNum);
+                            _fileIndex++;                            
+                            break;
                     
                     case MesgNum.FILE_ID:
 
@@ -342,15 +394,31 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
         }
 
         _records = new HashMap<>();
+        _fileTimestamp = new Integer[ZWIFT_FILES + 1];
+        _fileIndex = 0;
         InputStream stream; 
         Decode decode = new Decode();
         Listener listener = new Listener();
-        decode.addListener((MesgListener) listener);   
+        decode.addListener((MesgListener) listener);        
         
-        try {                      
-            stream = new FileInputStream(_zPath);            
+        try {     
+            stream = new FileInputStream(_zPath1);            
             decode.read(stream);
             stream.close(); 
+            if(!_zPath2.isEmpty()) { 
+                stream = new FileInputStream(_zPath2); 
+                decode = new Decode();
+                decode.addListener((MesgListener) listener); 
+                decode.read(stream);
+                stream.close();
+                if(!_zPath3.isEmpty()) {
+                    stream = new FileInputStream(_zPath3); 
+                    decode = new Decode();
+                    decode.addListener((MesgListener) listener); 
+                    decode.read(stream);
+                    stream.close();
+                }                
+            }            
         } 
         catch (FitRuntimeException | IOException e) {
             error("Error reading Zwift file.\n" + e.getMessage());            
@@ -362,14 +430,14 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
         class Listener implements MesgListener, MesgDefinitionListener {
             final private int VIRTUAL_ACTIVITY = SubSport.VIRTUAL_ACTIVITY.getValue();
             FileEncoder _encode;
-            Double _ascent, _descent, _lapAscent, _lapDescent, _lastAlt, _totDist, _lapDist, _maxSpd, _maxLapSpd, _offset;
+            Double _ascent, _descent, _distOffset, _lapAscent, _lapDescent, _lastAlt, _totDist, _lapDist, _lastDist, _maxSpd, _maxLapSpd;
             Integer _lapTime, _lastTime, _startTime;            
 
             public Listener() {
                 _encode = new FileEncoder(new File(_mPath), Fit.ProtocolVersion.V2_0);
-                _offset = null;
+                _distOffset = null;
                 _ascent = _descent = _lapAscent = _lapDescent = _lastAlt = _totDist = _lapDist = _maxSpd = _maxLapSpd = 0.0;
-                _lapTime = _lastTime = _startTime = 0;
+                _lapTime = _lastTime = _startTime = _fileIndex = 0;
             }
 
             @Override
@@ -387,11 +455,27 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
                             
                             // ignore records that dont match a Zwift timestamp
                             if(zData == null) return;
+                            // first zwift file
                             else if(_startTime == 0) {
                                 _startTime = timestamp;
                                 _lapTime = timestamp;
                                 _lastAlt = zData.get(FIELD.ALTITUDE);
-                            }   
+                            }
+                            // additional zwift file/s
+                            else if(_fileTimestamp[_fileIndex] < timestamp) {
+                                _fileIndex++;
+                                
+                                // add distance from previous file
+                                _distOffset = _totDist;
+                                
+                                // reset alt so not big jumps from change in location
+                                _lastAlt = zData.get(FIELD.ALTITUDE);
+                                
+                                // start a new lap                                
+                                _lapAscent = _lapDescent = _maxLapSpd = 0.0;
+                                _lapTime = timestamp;
+                                _lapDist = _totDist;
+                            }
 
                             // calculate altitudes
                             Double altitude = zData.get(FIELD.ALTITUDE);
@@ -405,8 +489,9 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
                             }   
                             
                             // distance offset removes any Zwift distance not covered by Garmin timestamps
-                            if(_offset == null) _offset = zData.get(FIELD.DISTANCE);
-                            _totDist = zData.get(FIELD.DISTANCE) - _offset;
+                            // or adds any difference when combining input files
+                            if(_distOffset == null) _distOffset = zData.get(FIELD.DISTANCE) * -1;
+                            _totDist = zData.get(FIELD.DISTANCE) + _distOffset;
                             
                             // watch for max speeds
                             Double speed = zData.get(FIELD.SPEED);
@@ -524,20 +609,25 @@ public class Zmerge extends JPanel implements ActionListener, FocusListener {
     public void merge() {
 
         _gPath = _gText.getText();
-        _zPath = _zText.getText();
-        _mPath = _mText.getText();
+        _zPath1 = _zText1.getText();
+        _zPath2 = _zText2.getText();
+        _zPath3 = _zText3.getText();
+        _mPath = _mText.getText(); 
                 
         try {
-            if(_mPath.equals(_gPath) || _mPath.equals(_zPath)) {
+            if(_mPath.equals(_gPath) || _mPath.equals(_zPath1) || _mPath.equals(_zPath2) || _mPath.equals(_zPath3)) {
                 error("You are trying to overwrite an input file!");
                 throw new RuntimeException();
             }
             checkInStream(_gPath);
-            checkInStream(_zPath);
-            checkOutStream(_mPath);            
+            checkInStream(_zPath1); 
+            if(!_zPath2.isEmpty()) {
+                checkInStream(_zPath2);
+                if(!_zPath3.isEmpty()) checkInStream(_zPath3);
+            }            
+            checkOutStream(_mPath);
             getZwiftData();
-            createNewGarminFile();
-            
+            createNewGarminFile();            
             info("Merging process completed successfully.");
         }
         catch (RuntimeException e) {
